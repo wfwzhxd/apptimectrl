@@ -21,6 +21,6 @@ public class DpmReceiver extends DeviceAdminReceiver {
         dpm.addUserRestriction(admin, UserManager.DISALLOW_ADD_USER);
         dpm.addUserRestriction(admin, UserManager.DISALLOW_SAFE_BOOT);
         dpm.addUserRestriction(admin, UserManager.DISALLOW_FACTORY_RESET);
-        dpm.addUserRestriction(admin, UserManager.DISALLOW_DEBUGGING_FEATURES);
+//        dpm.addUserRestriction(admin, UserManager.DISALLOW_DEBUGGING_FEATURES);
     }
 }

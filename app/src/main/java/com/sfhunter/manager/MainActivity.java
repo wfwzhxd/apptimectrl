@@ -21,7 +21,6 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    String PKG_NAME = "com.miHoYo.Yuanshen";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,60 +35,54 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = findViewById(R.id.textView);
         tv.setText(storage.toString());
 
-        btn_add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String pkgname = String.valueOf(vpkgName.getText());
-                if (String.valueOf(vMinutes.getText()).length() < 3) {
+        btn_add.setOnClickListener(v -> {
+            String pkgname = String.valueOf(vpkgName.getText());
+            if (String.valueOf(vMinutes.getText()).length() < 3) {
+                return;
+            }
+            int minutes = Integer.parseInt(String.valueOf(vMinutes.getText()));
+            if (getPackageName().equals(pkgname)) {
+                return;
+            }
+            Toast.makeText(MainActivity.this, pkgname + minutes, Toast.LENGTH_SHORT).show();
+            try {
+                getPackageManager().getPackageInfo(pkgname, 0);
+                // installed
+                if (storage.app_limit.containsKey(pkgname) && minutes>=storage.app_limit.get(pkgname)){
+                    Toast.makeText(MainActivity.this, "Minutes too Long", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                int minutes = Integer.valueOf(String.valueOf(vMinutes.getText()));
-                Toast.makeText(MainActivity.this, pkgname + String.valueOf(minutes), Toast.LENGTH_SHORT).show();
-                try {
-                    getPackageManager().getPackageInfo(pkgname, 0);
-                    // installed
-                    if (storage.app_limit.keySet().contains(pkgname) && minutes>=storage.app_limit.get(pkgname)){
-                        Toast.makeText(MainActivity.this, "Minutes too Long", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    storage.app_limit.put(pkgname, minutes);
-                    storage.save();
-
-                } catch (PackageManager.NameNotFoundException e) {
-                    Toast.makeText(MainActivity.this, "Not Install", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        btn_enable.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                long act_mins = (System.currentTimeMillis()-storage.last_enable_ts)/1000/60;
-                if (act_mins > storage.minutes_of_period) {
-                    for (String pkgname:storage.app_limit.keySet()){
-                        appCtl.enableApp(pkgname);
-                    }
-                    storage.last_enable_ts = System.currentTimeMillis();
-                    storage.save();
-                } else {
-                    Toast.makeText(MainActivity.this, "Sleep Time not enough", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        btn_enable.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                int minutes = Integer.valueOf("0" + String.valueOf(vMinutes.getText()));
-                if (minutes < 60 || minutes > 6*60) {
-                    return true;
-                }
-                storage.minutes_of_period = minutes;
+                storage.app_limit.put(pkgname, minutes);
                 storage.save();
+
+            } catch (PackageManager.NameNotFoundException e) {
+                Toast.makeText(MainActivity.this, "Not Install", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        });
+
+        btn_enable.setOnClickListener(v -> {
+
+            long act_mins = (System.currentTimeMillis()-storage.last_enable_ts)/1000/60;
+            if (act_mins > storage.minutes_of_period) {
+                for (String pkgname:storage.app_limit.keySet()){
+                    appCtl.enableApp(pkgname);
+                }
+                storage.last_enable_ts = System.currentTimeMillis();
+                storage.save();
+            } else {
+                Toast.makeText(MainActivity.this, "Sleep Time not enough", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btn_enable.setOnLongClickListener(v -> {
+            int minutes = Integer.parseInt("0" + vMinutes.getText());
+            if (minutes < 60 || minutes > 6*60) {
                 return true;
             }
+            storage.minutes_of_period = minutes;
+            storage.save();
+            return true;
         });
 
     }
